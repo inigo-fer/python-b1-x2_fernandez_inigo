@@ -14,28 +14,60 @@ class TaxType(Enum):
 
 class Tax:
     # Write the parameters in the next line
-    def __init__():
-        # Write here your code
+    def __init__(self, tax_id: str, tax_type: TaxType,percentage: float):
+        self.tax_id=tax_id
+        self.tax_type=tax_type
+        self.percentage=percentage
         pass
 
 
 class Product:
      # Write the parameters in the next line
-    def __init__():
-        # Write here your code
+    def __init__(self, product_id: str, name: str, expiration_date: datetime, bar_code: str, quantity: int, price: float, taxes: list[Tax]):
+        self.product_id=product_id
+        self.name=name
+        self.expiration_date=expiration_date
+        self.bar_code=bar_code
+        self.quantity=quantity
+        self.price=price
+        self.taxes=taxes
         pass        
 
     def calculate_tax(self, tax: Tax) -> float:
-        # Write here your code
-        pass
+        tax_base= self.quantity*self.price
+        tax_type=tax.tax_type
+        calculated_tax=0
+
+        for single_tax in self.taxes:
+            if single_tax.tax_type==tax_type:
+                if tax_type == TaxType.IVA:
+                    tax_amount=tax_base*single_tax.percentage
+                elif tax_type == TaxType.ISD:
+                    tax_amount=tax_base*single_tax.percentage*ISD_FACTOR
+            
+                calculated_tax=calculated_tax+tax_amount
+        
+        return calculated_tax
 
     def calculate_total_taxes(self) -> float:
-        # Write here your code
-        pass
+        
+        # Calculate IVA for this product
+        total_iva = self.calculate_tax(
+            Tax(tax_id="IND-IVA", tax_type=TaxType.IVA, percentage=0.0)
+        )
+        # Calculate ISD for this product
+        total_isd = self.calculate_tax(
+            Tax(tax_id="IND-ISD", tax_type=TaxType.ISD, percentage=0.0)
+        )
+        # Sum both
+        return float(total_iva + total_isd)
+
 
     def calculate_total(self) -> float:
-        # Write here your code
-        pass
+        base = self.quantity * self.price
+        taxes_total = self.calculate_total_taxes()
+        return float(base + taxes_total)
+
 
     def __eq__(self, another):
         # Do not change this method
@@ -55,13 +87,20 @@ class Product:
 
 class Bill:
     def __init__(self, bill_id: str, sale_date: datetime, seller: Seller, buyer: Buyer, products: list[Product]):
-        # Write here your code
+        self.bill_id=bill_id
+        self.sale_date=sale_date
+        self.seller=seller
+        self.buyer=buyer
+        self.products=products
         pass
        
 
     def calculate_total(self) -> float:
-        # Write here your code
-        pass
+        total = 0.0
+        for product in self.products:
+            total += product.calculate_total()
+        return float(total)
+
 
     def print(self):
         # Do not change this method
